@@ -2,16 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lab0</title>
+    <title>Lab1a</title>
     <link rel="stylesheet" href="styles/style.css">
+    <script src="scripts/gl-matrix-min.js"></script>
+    <script src="scripts/main.js"></script>
+    <script src="scripts/OBJParser.js"></script>
+    <script src="scripts/Shape.js"></script>
+    <script src="scripts/canvasSetupHelper.js"></script>
+    <script src="scripts/loadOBJHelper.js"></script>
+    <script src="scripts/generateShapeHelper.js"></script>
+    <script src="scripts/KeyBoardEventHandler.js"></script>
+    <script src="scripts/MouseEventHandler.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Lab0</h1>
+        <h1>Lab1a</h1>
         <div class="box">
-            <canvas id="webgl-canvas"></canvas>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <h3>Guides</h3>
+
+        <div class="guides">
+            <span style="color: red">X Axis</span>
+            <span style="color: green">Y Axis</span>
+            <span style="color: blue">Z Axis</span>
         </div>
     </div>
-    <script src="scripts/main.js"></script>
 </body>
 </html>

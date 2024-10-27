@@ -1,100 +1,115 @@
-//sources:
-// https://www.geeksforgeeks.org/how-to-set-up-a-webgl-project/
-// https://medium.com/@banksysan_10088/webgl-external-glsl-files-dd7cf85f9ee9
+/*
+    sources:
+        https://www.geeksforgeeks.org/how-to-set-up-a-webgl-project/
+        https://medium.com/@banksysan_10088/webgl-external-glsl-files-dd7cf85f9ee9
+        tutorial code from course
+*/
 
-const canvas = document.getElementById('webgl-canvas');
-let gl = canvas.getContext('webgl2');
+const { mat4 } = glMatrix;
+const toRad = glMatrix.glMatrix.toRadian;
 
-if (!gl) {
-    // Fallback to WebGL 1 if WebGL 2 is not available
-    gl = canvas.getContext('webgl');
-    if (!gl) {
-        alert("WebGL isn't available in your browser.");
+const shapes = [];
+let gl = null;
+let program = null;
+let then = 0;
+
+const locations = {
+    attributes: {
+        vertexLocation: null,
+        colorLocation: null
+    }, uniforms: {
+        modelViewMatrix: null,
+        projectionMatrix: null,
     }
 }
 
-// Define the viewport to cover the whole canvas
-gl.viewport(0, 0, canvas.width, canvas.height);
-// Set the clear color to white
-gl.clearColor(0.0, 0.0, 0.0, 0.0);
-// Clear the canvas using the specified clear color
-gl.clear(gl.COLOR_BUFFER_BIT);
+const viewMatrix = mat4.create();
 
+window.onload = async () => {
+    await setupProgram()
 
-function compileShader(gl, source, type) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error('Shader compile error:',
-            gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-    }
-    return shader;
+    await setupShapeGenerator()
+
+    handleKeyDownEvents()
+
+    handleMouseEvents()
+
+    // window.addEventListener('resize', () => resizeCanvasToDisplaySize(canvas));
+    //
+    // // Call this function initially to set the size correctly on page load
+    // resizeCanvasToDisplaySize(canvas);
+
+    // Load some data from external files - only works when serving from a webserver
+    // await loadData();
+
+    // start render loop
+    requestAnimationFrame(render);
 }
 
-async function fetchShaderSource(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to load shader from ${url}: ${response.statusText}`);
-    }
-    return response.text();
-}
+// function resizeCanvasToDisplaySize(canvas) {
+//     const width = canvas.clientWidth;
+//     const height = canvas.clientHeight;
+//     if (canvas.width !== width || canvas.height !== height) {
+//         canvas.width = width;
+//         canvas.height = height;
+//         gl.viewport(0, 0, width, height);
+//     }
+// }
 
-async function init() {
-    try {
-        // fetch the vertex and fragment shaders from external glsl files
-        const vertexShaderSource = await fetchShaderSource('shaders/vertexShader.glsl');
-        const fragmentShaderSource = await fetchShaderSource('shaders/fragmentShader.glsl');
+function render(now) {
+    // calculate elapsed time in seconds
+    let delta = now - then;
+    delta *= 0.001;
+    then = now;
 
-        // compile the shaders with the correct type
-        const vertexShader = compileShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
-        const fragmentShader = compileShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        // create program and link shaders
-        const program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
+    shapes.forEach((shape, index) => {
+        // scale rotation amount by time difference
+        // shape.rotate(1 * delta, [1, 1, 0]);
+        shape.draw();
 
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program link error:', gl.getProgramInfoLog(program));
+        if (selectedShapeIndex === index || selectedShapeIndex === -1) {
+            shape.renderLocalAxes()
         }
+    });
 
-        gl.useProgram(program);
-
-        // define vertices
-        // every row indicates (x,y,z) of a vertex
-        const vertices = new Float32Array([
-            0.0, -0.5, 0.0, // bottom
-            -0.5, 0.5, 0.0, // top-left
-            0.5, 0.5, 0.0   // top-right
-        ]);
-
-        // create and bind it to vertices
-        const buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-        const positionLocation = gl.getAttribLocation(program, 'a_position');
-        gl.enableVertexAttribArray(positionLocation);
-        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-
-        gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
-    } catch (error) {
-        console.error(error);
-    }
+    requestAnimationFrame(render)
 }
 
-function main(){
-    init()
-        .then(() => {
-            console.log("WebGL initialization successful.");
-        })
-        .catch(error => {
-            console.error("Error during WebGL initialization:", error);
-        });
-}
+async function setupShapeGenerator() {
+    const parsedTetra= await loadOBJ('ObjectModels/tetrahedron.obj')
+    const parsedCube = await loadOBJ('ObjectModels/cube.obj')
+    const parsedTeapot = await loadOBJ('ObjectModels/teapot.obj')
+    const parsedBunny  = await loadOBJ('ObjectModels/bunny.obj')
+    const parsedJet = await loadOBJ('ObjectModels/10716_JetFighter_v2.obj')
 
-main();
+    shapes.push(generateShape(parsedTetra));
+    shapes[0].translate([-2.5, 2.5, 0]);
+
+    shapes.push(generateShape(parsedTetra));
+    shapes[1].translate([0, 2.5, 0]);
+
+    shapes.push(generateShape(parsedTetra));
+    shapes[2].translate([2.5, 2.5, 0]);
+
+    shapes.push(generateShape(parsedCube));
+    shapes[3].translate([-2.5, 0, 0]);
+
+    shapes.push(generateShape(parsedCube));
+    shapes[4].translate([0, 0, 0]);
+
+    shapes.push(generateShape(parsedCube));
+    shapes[5].translate([2.5, 0, 0]);
+
+    shapes.push(generateShape(parsedTeapot));
+    shapes[6].translate([-2.5, -2.5, 0]);
+
+    shapes.push(generateShape(parsedBunny));
+    shapes[7].translate([0, -2.5, 0]);
+    shapes[7].scale([8, 8, 8]);
+
+    shapes.push(generateShape(parsedJet));
+    shapes[8].translate([2.5, -2.5, 0]);
+    shapes[8].scale([0.002, 0.002, 0.002]);
+}
