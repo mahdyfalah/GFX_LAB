@@ -69,8 +69,11 @@ function render(now) {
         // shape.rotate(1 * delta, [1, 1, 0]);
         shape.draw();
 
-        if (selectedShapeIndex === index || selectedShapeIndex === -1) {
-            shape.renderLocalAxes()
+        // show the Axis on the selected object or global axis if all are selected (index = -1)
+        if (selectedShapeIndex === index) {
+            shape.renderAxes()
+        }else if (selectedShapeIndex === -1 && index === 4) {
+            shape.renderAxes(true)
         }
     });
 
@@ -78,11 +81,11 @@ function render(now) {
 }
 
 async function setupShapeGenerator() {
-    const parsedTetra= await loadOBJ('ObjectModels/tetrahedron.obj')
-    const parsedCube = await loadOBJ('ObjectModels/cube.obj')
-    const parsedTeapot = await loadOBJ('ObjectModels/teapot.obj')
-    const parsedBunny  = await loadOBJ('ObjectModels/bunny.obj')
-    const parsedJet = await loadOBJ('ObjectModels/10716_JetFighter_v2.obj')
+    const parsedTetra= await loadOBJ('object-models/tetrahedron.obj')
+    const parsedCube = await loadOBJ('object-models/cube.obj')
+    const parsedTeapot = await loadOBJ('object-models/teapot.obj')
+    const parsedBunny  = await loadOBJ('object-models/bunny.obj')
+    const parsedJet = await loadOBJ('object-models/10716_JetFighter_v2.obj')
 
     shapes.push(generateShape(parsedTetra));
     shapes[0].translate([-2.5, 2.5, 0]);

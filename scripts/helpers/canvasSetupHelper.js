@@ -57,8 +57,6 @@ function createProjectionMatrix(){
 
 function createViewMatrix(){
     mat4.lookAt(viewMatrix, [0, 0, 10], [0, 0, 0], [0, 1, 0]);
-    // translate view matrix
-    mat4.translate(viewMatrix, viewMatrix, [-0.5, 0, 0])
 }
 
 async function setupProgram() {

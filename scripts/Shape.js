@@ -1,5 +1,6 @@
 class Shape {
     axisLengths = [1, 1, 1];
+    translationFactors =[0, 0, 0]
     scaleFactors = [1, 1, 1];
 
     constructor() {
@@ -58,7 +59,7 @@ class Shape {
             /**
              * To get world transformations, you need to apply the new transformation after all the other transformations, i.e. as the left-most operand:
              * rotationMatrix * modelMatrix
-             * 
+             *
              * You can do this manually by constructing the transformation matrix and then using mat4.multiply(out, leftOperand, rightOperand).
              */
             const rotationMatrix = mat4.create();
@@ -68,8 +69,11 @@ class Shape {
     }
 
     translate(vector) {
+        this.translationFactors = this.translationFactors
+            .map((x, i )=> x + vector[i])
+
         // to handle movementSpeed of scaled shapes
-        if (this.scaleFactors !== [1, 1, 1]){
+        if (this.scaleFactors !== [1, 1, 1]) {
             vector = vector.map((x, i) => x / this.scaleFactors[i]);
         }
 
@@ -78,12 +82,12 @@ class Shape {
 
     scale(vector) {
         // to show the axis based on scale of the selected object
-        this.scaleFactors = vector;
+        this.scaleFactors = this.scaleFactors.map((x, i) => x * vector[i]);
 
-        if (this.scaleFactors !== [1, 1, 1]){
+        if (this.scaleFactors !== [1, 1, 1]) {
             this.axisLengths =
                 this.axisLengths
-                    .map((x, i) => x / this.scaleFactors[i]);
+                    .map((x, i) => x / vector[i]);
         }
 
         mat4.scale(this.modelMatrix, this.modelMatrix, vector);
@@ -105,12 +109,15 @@ class Shape {
         gl.enableVertexAttribArray(location);
     }
 
-    renderLocalAxes() {
-        // Define axis lines in local coordinates
+    renderAxes(global = false) {
+        // Determine the multiplier based on the global flag
+        const multiplier = global ? 4 : 1;
+
+        // Define axis lines in local coordinates, applying the multiplier
         const axesVertices = [
-            -this.axisLengths[0], 0, 0, this.axisLengths[0], 0, 0,   // x-axis line (red)
-            0, -this.axisLengths[1], 0, 0, this.axisLengths[1], 0,    // y-axis line (green)
-            0, 0, -this.axisLengths[2], 0, 0, this.axisLengths[2]    // z-axis line (blue)
+            -this.axisLengths[0] * multiplier, 0, 0, this.axisLengths[0] * multiplier, 0, 0,   // x-axis line (red)
+            0, -this.axisLengths[1] * multiplier, 0, 0, this.axisLengths[1] * multiplier, 0,    // y-axis line (green)
+            0, 0, -this.axisLengths[2] * multiplier, 0, 0, this.axisLengths[2] * multiplier    // z-axis line (blue)
         ];
 
         const axisColors = [
@@ -143,4 +150,5 @@ class Shape {
         gl.deleteBuffer(axisVerticesBuffer);
         gl.deleteBuffer(axisColorBuffer);
     }
+
 }
