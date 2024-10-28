@@ -72,9 +72,10 @@ function render(now) {
         // show the Axis on the selected object or global axis if all are selected (index = -1)
         if (selectedShapeIndex === index) {
             shape.renderAxes()
-        }else if (selectedShapeIndex === -1 && index === 4) {
-            shape.renderAxes(true)
         }
+        // else if (selectedShapeIndex === -1 && index === 4) {
+        //     shape.renderAxes(true)
+        // }
     });
 
     requestAnimationFrame(render)

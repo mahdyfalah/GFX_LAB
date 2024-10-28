@@ -84,6 +84,7 @@ class Shape {
         // to show the axis based on scale of the selected object
         this.scaleFactors = this.scaleFactors.map((x, i) => x * vector[i]);
 
+        // to keep the axis lengths consistent even after scaling
         if (this.scaleFactors !== [1, 1, 1]) {
             this.axisLengths =
                 this.axisLengths
