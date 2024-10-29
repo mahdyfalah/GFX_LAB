@@ -30,6 +30,8 @@ function handleKeyDownEvents() {
 function handleTranslationEvent(key) {
     if (selectedShapeIndex === null) {
         handleViewTranslation(key)
+    }else if (selectedShapeIndex === -1){
+        handleGroupTransLation(key)
     } else {
         handleObjectTranslation(key)
     }
@@ -58,37 +60,51 @@ function handleViewTranslation(key) {
     }
 }
 
+function handleGroupTransLation(key) {
+    switch (key) {
+        case "ArrowLeft":
+            mat4.translate(viewMatrix, viewMatrix, [-translationSpeed, 0, 0]);
+            break;
+        case "ArrowRight":
+            mat4.translate(viewMatrix, viewMatrix, [translationSpeed, 0, 0]);
+            break;
+        case "ArrowUp":
+            mat4.translate(viewMatrix, viewMatrix, [0, translationSpeed, 0]);
+            break;
+        case "ArrowDown":
+            mat4.translate(viewMatrix, viewMatrix, [0, -translationSpeed, 0]);
+            break;
+
+        case ",":
+            mat4.translate(viewMatrix, viewMatrix, [0, 0, translationSpeed]);
+            break;
+        case ".":
+            mat4.translate(viewMatrix, viewMatrix, [0, 0, -translationSpeed]);
+            break;
+        default:
+            break;
+    }
+}
+
 function handleObjectTranslation(key) {
     switch (key) {
         case "ArrowLeft":
-            selectedShapes.forEach(shape => {
-                shape.translate([-translationSpeed, 0, 0]);
-            })
+            selectedShapes[0].translate([-translationSpeed, 0, 0]);
             break;
         case "ArrowRight":
-            selectedShapes.forEach(shape => {
-                shape.translate([translationSpeed, 0, 0]);
-            })
+            selectedShapes[0].translate([translationSpeed, 0, 0]);
             break;
         case "ArrowUp":
-            selectedShapes.forEach(shape => {
-                shape.translate([0, translationSpeed, 0]);
-            })
+            selectedShapes[0].translate([0, translationSpeed, 0]);
             break;
         case "ArrowDown":
-            selectedShapes.forEach(shape => {
-                shape.translate([0, -translationSpeed, 0]);
-            })
+            selectedShapes[0].translate([0, -translationSpeed, 0]);
             break;
         case ",":
-            selectedShapes.forEach(shape => {
-                shape.translate([0, 0, translationSpeed]);
-            })
+            selectedShapes[0].translate([0, 0, translationSpeed]);
             break;
         case ".":
-            selectedShapes.forEach(shape => {
-                shape.translate([0, 0, -translationSpeed]);
-            })
+            selectedShapes[0].translate([0, 0, -translationSpeed]);
             break;
         default:
             break;
