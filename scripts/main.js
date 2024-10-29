@@ -34,27 +34,9 @@ window.onload = async () => {
 
     handleMouseEvents()
 
-    // window.addEventListener('resize', () => resizeCanvasToDisplaySize(canvas));
-    //
-    // // Call this function initially to set the size correctly on page load
-    // resizeCanvasToDisplaySize(canvas);
-
-    // Load some data from external files - only works when serving from a webserver
-    // await loadData();
-
     // start render loop
     requestAnimationFrame(render);
 }
-
-// function resizeCanvasToDisplaySize(canvas) {
-//     const width = canvas.clientWidth;
-//     const height = canvas.clientHeight;
-//     if (canvas.width !== width || canvas.height !== height) {
-//         canvas.width = width;
-//         canvas.height = height;
-//         gl.viewport(0, 0, width, height);
-//     }
-// }
 
 function render(now) {
     // calculate elapsed time in seconds
@@ -73,9 +55,9 @@ function render(now) {
         if (selectedShapeIndex === index) {
             shape.renderAxes()
         }
-        // else if (selectedShapeIndex === -1 && index === 4) {
-        //     shape.renderAxes(true)
-        // }
+        else if (selectedShapeIndex === -1 && index === 4) {
+            shape.renderAxes(true)
+        }
     });
 
     requestAnimationFrame(render)

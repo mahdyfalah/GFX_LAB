@@ -13,7 +13,7 @@ function handleMouseEvents() {
 
     window.addEventListener("mousemove", (event) => {
         if (isDragging) {
-            // Calculate delta movement
+            // Calculate delta movement => the current position of the mouse - the position where dragging started
             const deltaX = event.clientX - lastMousePosition.x;
             const deltaY = event.clientY - lastMousePosition.y;
             lastMousePosition = { x: event.clientX, y: event.clientY };
@@ -22,7 +22,7 @@ function handleMouseEvents() {
             const translationSpeed = 0.005;
             const translationVector = [
                 deltaX * translationSpeed,
-                -deltaY * translationSpeed, // Invert Y for natural movement
+                -deltaY * translationSpeed,
                 0
             ];
 

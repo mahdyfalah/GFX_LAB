@@ -131,6 +131,7 @@ class Shape {
         const axisVerticesBuffer = gl.createBuffer();
         const axisColorBuffer = gl.createBuffer();
 
+        /// send data to buffers
         gl.bindBuffer(gl.ARRAY_BUFFER, axisVerticesBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(axesVertices), gl.STATIC_DRAW);
 
@@ -145,11 +146,10 @@ class Shape {
         gl.uniformMatrix4fv(locations.uniforms.modelMatrix, false, this.modelMatrix);
 
         // Draw lines for the axes
-        gl.drawArrays(gl.LINES, 0, 6);
+        gl.drawArrays(gl.LINES, 0, axesVertices.length / 3);
 
         // Cleanup
         gl.deleteBuffer(axisVerticesBuffer);
         gl.deleteBuffer(axisColorBuffer);
     }
-
 }
