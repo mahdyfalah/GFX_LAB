@@ -2,17 +2,36 @@
 *   source :  https://webglfundamentals.org/webgl/lessons/webgl-load-obj.html
 */
 let objPositions;
+let objNormals;
 let vertexData;
 
 function addVertex(vertex) {
-    const index = parseInt(vertex.split('/')[0], 10);
+    const ptn = vertex.split('/');
 
-    // add the position to the vertexData by index
-    vertexData.push(...objPositions[index]);
+    ptn.forEach((objIndexStr, i) => {
+        if (!objIndexStr) {
+            return;
+        }
+        const objIndex = parseInt(objIndexStr);
+
+        // objPosition
+        if (i === 0) {
+            const index = objIndex + (objIndex >= 0 ? 0 : objPositions.length);
+            vertexData[0].push(...objPositions[index])
+        }
+
+        // objNormal
+        if (i === 2) {
+            const index = objIndex + (objIndex >= 0 ? 0 : objNormals.length);
+            vertexData[1].push(...objNormals[index]);
+        }
+    });
 }
+
 function parseOBJ(text) {
     objPositions = [[0, 0, 0]];
-    vertexData = [];
+    objNormals = [[0, 0, 0]];
+    vertexData = [[], []];
 
     // split each line to array of strings
     const lines = text.split('\n');
@@ -31,6 +50,9 @@ function parseOBJ(text) {
             case 'v':
                 objPositions.push(parts.map(parseFloat));
                 break;
+            case 'vn':
+                objNormals.push(parts.map(parseFloat));
+                break;
             case 'f':
                 parts.forEach(part => {
                     addVertex(part);
@@ -40,7 +62,8 @@ function parseOBJ(text) {
     }
 
     return {
-        position: vertexData,
+        position: vertexData[0],
+        normal: vertexData[1],
     };
 }
 
