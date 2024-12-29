@@ -1,14 +1,14 @@
 function generateShape(parsedObj) {
-    const { position } = parsedObj;
+    const { position, normal } = parsedObj;
 
     const colors = [];
     const numVertices = position.length / 3;
     for (let i = 0; i < numVertices; i++) {
-        colors.push([Math.random(), Math.random(), Math.random()]);
+        colors.push([96/255, 130/255, 182/255]);
     }
 
     const shape = new Shape();
-    shape.initData(position, colors);
+    shape.initData(position, colors, normal);
 
     return shape;
 }

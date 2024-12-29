@@ -4,27 +4,6 @@
         https://medium.com/@banksysan_10088/webgl-external-glsl-files-dd7cf85f9ee9
         tutorial code from course
 */
-
-const {mat4} = glMatrix;
-const toRad = glMatrix.glMatrix.toRadian;
-
-const shapes = [];
-let gl = null;
-let program = null;
-let then = 0;
-
-const locations = {
-    attributes: {
-        vertexLocation: null,
-        colorLocation: null
-    }, uniforms: {
-        modelViewMatrix: null,
-        projectionMatrix: null,
-    }
-}
-
-const viewMatrix = mat4.create();
-
 window.onload = async () => {
     await setupProgram()
 
@@ -43,6 +22,11 @@ function render(now) {
     let delta = now - then;
     delta *= 0.001;
     then = now;
+
+    const lightPositionInViewSpace = vec4.clone(lightPosition);
+    vec4.transformMat4(lightPositionInViewSpace, lightPositionInViewSpace, viewMatrix);
+
+    gl.uniform4fv(locations.uniforms.lightPosition, lightPositionInViewSpace);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -68,8 +52,10 @@ async function setupShapeGenerator() {
     const parsedTeapot = await loadOBJ('object-models/teapot.obj')
     const parsedBunny = await loadOBJ('object-models/bunny.obj')
     const parsedJet = await loadOBJ('object-models/10716_JetFighter_v2.obj')
+    // const parsedCar = await loadOBJ('object-models/11497_Car_v2.obj')
 
-    shapes.push(generatePyramid())
+    // shapes.push(generatePyramid())
+    shapes.push(generateShape(parsedTetra));
     shapes[0].translate([-2.5, 2.5, 0]);
 
     shapes.push(generateShape(parsedTetra));
@@ -78,10 +64,13 @@ async function setupShapeGenerator() {
     shapes.push(generateShape(parsedTetra));
     shapes[2].translate([2.5, 2.5, 0]);
 
-    shapes.push(generateCube());
+    // shapes.push(generateCube());
+    // shapes.push(generateShape(parsedCube));
+    shapes.push(generateShape(parsedTeapot));
     shapes[3].translate([-2.5, 0, 0]);
 
-    shapes.push(generateShape(parsedCube));
+    shapes.push(generateShape(parsedBunny));
+    shapes[4].scale([8, 8, 8]);
     shapes[4].translate([0, 0, 0]);
 
     shapes.push(generateShape(parsedCube));

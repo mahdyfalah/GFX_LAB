@@ -19,34 +19,39 @@ async function fetchShaderSource(url) {
     return response.text();
 }
 
-async function createShaderProgram() {
-    // fetch the vertex and fragment shaders from external glsl files
-    const vertexShaderSource = await fetchShaderSource('shaders/vertexShader.glsl');
-    const fragmentShaderSource = await fetchShaderSource('shaders/fragmentShader.glsl');
+async function loadAllShaders() {
+    for (const [key, paths] of Object.entries(shaderConfigs)) {
+        const vertexShaderSource = await fetchShaderSource(paths.vertex);
+        const fragmentShaderSource = await fetchShaderSource(paths.fragment);
 
-    // compile the shaders with the correct type
-    const vertexShader = compileShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
-    const fragmentShader = compileShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
+        const vertexShader = compileShader(gl, vertexShaderSource, gl.VERTEX_SHADER);
+        const fragmentShader = compileShader(gl, fragmentShaderSource, gl.FRAGMENT_SHADER);
 
-    // create program and link shaders
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
 
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        console.error("Error while linking program", gl.getProgramInfoLog(program));
-        return false;
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error(`Error linking program for ${key}:`, gl.getProgramInfoLog(program));
+            continue;
+        }
+
+        shaderPrograms[key] = program;
     }
-
-    return program;
 }
 
-function saveAttributeAndUniformLocation() {
+function saveAttributeAndUniformLocations() {
     locations.attributes.vertexLocation = gl.getAttribLocation(program, "vertexPosition");
     locations.attributes.colorLocation = gl.getAttribLocation(program, "vertexColor");
+    locations.attributes.normalLocation = gl.getAttribLocation(program, "vertexNormal")
+
     locations.uniforms.modelViewMatrix = gl.getUniformLocation(program, "modelViewMatrix");
     locations.uniforms.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix");
+
+    locations.uniforms.normalMatrix = gl.getUniformLocation(program, "normalMatrix")
+    locations.uniforms.lightPosition = gl.getUniformLocation(program, "lightViewPosition")
 }
 
 function createProjectionMatrix(){
@@ -59,6 +64,20 @@ function createViewMatrix(){
     mat4.lookAt(viewMatrix, [0, 0, 10], [0, 0, 0], [0, 1, 0]);
 }
 
+function setActiveShader(shaderKey) {
+    if (!shaderPrograms[shaderKey]) {
+        console.error(`Shader program "${shaderKey}" not found.`);
+        return;
+    }
+
+    program = shaderPrograms[shaderKey];
+    gl.useProgram(program);
+
+    saveAttributeAndUniformLocations();
+    createProjectionMatrix();
+    createViewMatrix();
+}
+
 async function setupProgram() {
     let canvas = document.getElementById("canvas");
     gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -69,14 +88,9 @@ async function setupProgram() {
     canvas.height = canvas.clientHeight;
     gl.viewport(0, 0, canvas.width, canvas.height);
 
-    gl.clearColor(0.729, 0.764, 0.674, 1);
+    gl.clearColor(40/255, 40/255, 43/255, 1);
 
-    program = await createShaderProgram()
-    gl.useProgram(program);
+    await loadAllShaders();
 
-    saveAttributeAndUniformLocation();
-
-    createProjectionMatrix()
-
-    createViewMatrix()
+    setActiveShader("gouraudDiffuse");
 }

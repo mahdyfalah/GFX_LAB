@@ -2,27 +2,48 @@ let selectedShapeIndex = null;
 let selectedShapes = [];
 const translationSpeed = 0.2;
 const rotationAngle = Math.PI / 8;
+let isLightTransformMode = false
+let rotationMatrix = mat4.create();
+const lightRotationAngle = Math.PI / 512;
 
 const movementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", ",", "."];
 const scalingKeys = ["a", "b", "c", "A", "B", "C"];
 const rotationKeys = ["i", "k", "o", "u", "l", "j"];
 const objectSelectionKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+const shaderSelectionKeys = ["w", "e", "r", "t"]
+const lightTransformModeKey = "L"
 const axisX = [1, 0, 0]
 const axisY = [0, 1, 0]
 const axisZ = [0, 0, 1]
 
 function handleKeyDownEvents() {
     window.addEventListener("keydown", (event) => {
-        if (movementKeys.includes(event.key)) {
-            handleTranslationEvent(event.key)
-        } else if (objectSelectionKeys.includes(event.key)) {
-            handleObjectSelection(event.key);
-        } else if (scalingKeys.includes(event.key)) {
-            handleRotationEvent(event.key);
-        } else if (rotationKeys.includes(event.key)) {
-            handleObjectRotation(event.key);
-        } else if (event.key === " ") {
-            deselectAllShapes()
+        if (event.key === "L"){
+            isLightTransformMode = !isLightTransformMode
+        }
+
+        if (shaderSelectionKeys.includes(event.key)){
+            handleShaderSelection(event.key);
+        }
+
+        if (isLightTransformMode){
+            if (movementKeys.includes(event.key)){
+                handleLightTransformations(event.key)
+            }else if (rotationKeys.includes(event.key)){
+                handleLightRotations(event.key)
+            }
+        }else {
+            if (movementKeys.includes(event.key)) {
+                handleTranslationEvent(event.key)
+            } else if (objectSelectionKeys.includes(event.key)) {
+                handleObjectSelection(event.key);
+            }else if (scalingKeys.includes(event.key)) {
+                handleRotationEvent(event.key);
+            } else if (rotationKeys.includes(event.key)) {
+                handleObjectRotation(event.key);
+            } else if (event.key === " ") {
+                deselectAllShapes()
+            }
         }
     })
 }
@@ -31,7 +52,7 @@ function handleTranslationEvent(key) {
     if (selectedShapeIndex === null) {
         handleViewTranslation(key)
     }else if (selectedShapeIndex === -1){
-        handleGroupTransLation(key)
+        handleGroupTranslation(key)
     } else {
         handleObjectTranslation(key)
     }
@@ -60,7 +81,7 @@ function handleViewTranslation(key) {
     }
 }
 
-function handleGroupTransLation(key) {
+function handleGroupTranslation(key) {
     switch (key) {
         case "ArrowLeft":
             mat4.translate(viewMatrix, viewMatrix, [-translationSpeed, 0, 0]);
@@ -74,7 +95,6 @@ function handleGroupTransLation(key) {
         case "ArrowDown":
             mat4.translate(viewMatrix, viewMatrix, [0, -translationSpeed, 0]);
             break;
-
         case ",":
             mat4.translate(viewMatrix, viewMatrix, [0, 0, translationSpeed]);
             break;
@@ -250,6 +270,82 @@ function handleObjectSelection(key) {
         selectedShapes = shapes;
     }
 }
+
+function handleShaderSelection(key) {
+    switch (key) {
+        case "w":
+            setActiveShader("gouraudDiffuse");
+            break;
+        case "e":
+            setActiveShader("gouraudSpecular");
+            break;
+        case "r":
+            setActiveShader("phongDiffuse");
+            break;
+        case "t":
+            setActiveShader("phongSpecular");
+            break;
+        default:
+            break;
+    }
+}
+
+function handleLightTransformations(key) {
+    switch (key) {
+        case 'ArrowLeft':
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(-translationSpeed, 0, 0, 0));
+            break;
+        case 'ArrowRight':
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(translationSpeed, 0, 0, 0));
+            break;
+        case 'ArrowUp':
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(0, translationSpeed, 0, 0));
+            break;
+        case 'ArrowDown':
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(0, -translationSpeed, 0, 0));
+            break;
+        case ",":
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(0, 0, translationSpeed, 0));
+            break;
+        case ".":
+            vec4.add(lightPosition, lightPosition, vec4.fromValues(0, 0, -translationSpeed, 0));
+            break;
+        default:
+            break;
+    }
+}
+
+function handleLightRotations(key){
+    switch (key) {
+        case "i":
+            mat4.rotate(rotationMatrix, rotationMatrix, -lightRotationAngle, axisX);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        case "k":
+            mat4.rotate(rotationMatrix, rotationMatrix, lightRotationAngle, axisX);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        case "o":
+            mat4.rotate(rotationMatrix, rotationMatrix, lightRotationAngle, axisY);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        case "u":
+            mat4.rotate(rotationMatrix, rotationMatrix, -lightRotationAngle, axisY);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        case "l":
+            mat4.rotate(rotationMatrix, rotationMatrix, -lightRotationAngle, axisZ);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        case "j":
+            mat4.rotate(rotationMatrix, rotationMatrix, lightRotationAngle, axisZ);
+            vec4.transformMat4(lightPosition, lightPosition, rotationMatrix);
+            break;
+        default:
+            break;
+    }
+}
+
 
 function deselectAllShapes() {
     selectedShapeIndex = null;

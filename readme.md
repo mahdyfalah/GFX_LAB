@@ -5,7 +5,7 @@ everything needed to run should already be included in the project including
 3d models etc.
 
 - to run the app: <br>
-navigate to Lab0 dir in Terminal and run <br> 
+navigate to Lab1b dir in Terminal and run <br> 
 ```npm install -g lite-server``` <br>
 then stat the app by running <br>
 ```lite-server``` <br>
@@ -18,17 +18,37 @@ you can access the application on <br>
 but this lacks the auto-refresh functionality on code updates
 
 ## Claim
-I have tried to implement every task
+I have tried to implement every main task (excluding bonuses)
 
 - task 1: <br>
-implementation of camera and the 9 3D models
+implementation of Gouraud/diffuse shaders can be found in shaders/gouraud/diffuse/...
 - task 2 : <br>
-I have implemented user interaction with the camera/world
-with both mouse and keyboard, you can find the code in scripts/event-handlers
+  implementation of Gouraud/specular shaders can be found in shaders/gouraud/specular/...
 - task 3: <br>
-I also have implemented all 4 sections (a, b, c, d)
-and almost all code for this sections can be found in
-scripts/event-handlers/KeyboardEventHandler.js
+  implementation of phong/diffuse shaders can be found in shaders/phong/diffuse/...
 - task 4: <br>
-I also have imported more complex shapes using the objParser
-I implemented from the noted source
+  implementation of phong/specular shaders can be found in shaders/phong/specular/...
+- task 5: <br>
+  interactions with light both a and b.
+  the implementation can be found in keyboardEventHandler.js
+  where I have added new function and a new param to switch and handle transformations
+  to light or objects.
+  to make switching between shaders seamless I updated the canvasSetupHelper.js so that 
+  all shaders are loaded and compiled at the start with their attributes/uniforms on a 
+  map with keys to each shader program.
+  The user can switch between each at the will and all required params are stored on the
+  newly created globals.js
+  rotations and translations of the light is also possible when "L" on keyboard is pushed
+  , and they have similar logic to shapes, but as the light is not a Shape object and
+  is not on the shapes array, they are directly changing the light position.
+
+## Tested environments
+I have implemented and tested my app on my Windows PC using intellij and chrome
+
+## Additional and general remarks
+I have used multiple sources in order to implement shaders this includes:
+course and Q&A material from this semester and also Ideas from source code of 
+previous semester.
+
+this includes hints such as loading all shaders at the start, using maps instead of
+simple array to switch between, hardcoded ambient/diffuse coefficients for simplicity, etc.
